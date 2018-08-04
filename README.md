@@ -8,12 +8,14 @@
 This project creates 2 CloudFormation stacks :
 1. **public-private-vpc.json**   
 This stack deploys a Fargate cluster that is in a VPC with both\npublic and private subnets. Containers can be deployed into either\nthe public subnets or the private subnets, and there are two load\nbalancers. One is inside the public subnet, which can be used to\nsend traffic to the containers in the private subnet, and one in\nthe private subnet, which can be used for private internal traffic\nbetween internal services.
+
 ![private task](images/private-task.png)
 
 2. **private-subnet-public-loadbalancer.json**   
 Deploy a service on AWS Fargate, hosted in a private subnet, but accessible via a public load balancer. This also launches an EC2 instance using Deep Learning Ubuntu AMI
 The Deep Learning instance creates container image using Dockerfile mentioned in this repo. It pushes it to ECR and configures task definition.
 The stack then creates a ECS cluster with the task definition.
+
 ![private subnet public load balancer](images/private-task-public-loadbalancer.png)
 
 ### Prerequisites
