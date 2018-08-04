@@ -1,0 +1,53 @@
+[{
+    "ParameterKey": "StackName",
+    "ParameterValue": "myteststackMMS"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "WebServerKey"
+  },
+  {
+    "ParameterKey": "ServiceName",
+    "ParameterValue": "mxnet-model-server-fargate-app"
+  },
+  {
+    "ParameterKey": "ImageUrl",
+    "ParameterValue": "awsdeeplearningteam/mms_cpu"
+  },
+  {
+    "ParameterKey": "ContainerPort",
+    "ParameterValue": "8080"
+  },
+  {
+    "ParameterKey": "HostPort",
+    "ParameterValue": "8080"
+  },
+  {
+    "ParameterKey": "ContainerCpu",
+    "ParameterValue": "256"
+  },
+  {
+    "ParameterKey": "ContainerMemory",
+    "ParameterValue": "512"
+  },
+  {
+    "ParameterKey": "Path",
+    "ParameterValue": "*"
+  },
+  {
+    "ParameterKey": "Priority",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "DesiredCount",
+    "ParameterValue": "2"
+  },
+  {
+    "ParameterKey": "Role",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "DeepLearningInstanceType",
+    "ParameterValue": "p3.2xlarge"
+  }
+]
