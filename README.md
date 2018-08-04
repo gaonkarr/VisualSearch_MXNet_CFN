@@ -68,7 +68,6 @@ ssh -i ./<<keypair-name>>.pem -L 8888:127.0.0.1:8888 ubuntu@<<InstanceIP>>
 git clone https://github.com/ThomasDelteil/VisualSearch_MXNet.git
 ```
 
-Goto https://github.com/ThomasDelteil/VisualSearch_MXNet and follow steps
 
 
 5. Once the Jupyter Notebook is started, access it via your local browser using localhost link. The token is displayed in the terminal window where you launched the server. Look for something like:
@@ -80,7 +79,7 @@ Copy the link and use that to access your Jupyter notebook server.
   
 
 
-6. Run the steps in Jupyter Notebook to create models and indexes.
+6. Goto https://github.com/ThomasDelteil/VisualSearch_MXNet and run the steps in Jupyter Notebook to create models and indexes.
 
 
 
@@ -89,11 +88,11 @@ Copy the link and use that to access your Jupyter notebook server.
 7. Once the model is created go back to the Deep Learning Instance terminal, run following commands to update the docker image and push it to ECR.
     
 
-   7.1 Get docker login :
-build the Docker image using Dockerfile provided in "VisualSearch_MXNet/mms" folder.
+   7.1 Get docker login & build the Docker image using Dockerfile provided in "VisualSearch_MXNet/mms" folder.
 
 ```
     cd <path/to/project>/VisualSearch_MXNet/mms
+    `aws ecr get-login --region us-east-1`
     docker build -t <repository-name>:latest .
 ```
 
