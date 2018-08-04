@@ -211,7 +211,6 @@
 		},
 		"mmsTaskDefinition": {
 			"Type": "AWS::ECS::TaskDefinition",
-			"DependsOn": "DeepLearningInstance",
 			"Properties": {
 				"Family": { "Ref": "ServiceName" },
 				"Cpu": { "Ref": "ContainerCpu" },
@@ -232,13 +231,7 @@
 				},
 				"ContainerDefinitions": [{
 					"Name": { "Ref": "ServiceName" },
-					"Image": {
-						"Fn::Join": ["", [{ "Ref": "AWS::AccountId" },
-							".dkr.ecr.",
-							{ "Ref": "AWS::Region" },
-							".amazonaws.com/", { "Ref": "MyRepository" }, ":latest"
-						]]
-					},
+					"Image": { "Ref": "ImageUrl" },
 					"PortMappings": [{
 						"ContainerPort": { "Ref": "ContainerPort" },
 						"HostPort": { "Ref": "HostPort" },
@@ -326,12 +319,6 @@
 		},
 		"DeepLearningInstance": {
 			"Type": "AWS::EC2::Instance",
-			"DependsOn": "MyRepository",
-			"CreationPolicy": {
-				"ResourceSignal": {
-					"Timeout": "PT15M"
-				}
-			},
 			"Properties": {
 				"ImageId": { "Fn::FindInMap": ["DeepLearningAMI", { "Ref": "AWS::Region" }, "AMI"] },
 				"KeyName": { "Ref": "KeyName" },
@@ -347,48 +334,7 @@
 				}, {
 					"Key": "Project",
 					"Value": "VisualSearch_MXNetWorkshop"
-				}],
-				"UserData": {
-					"Fn::Base64": {
-						"Fn::Join": ["", [
-							"#!/bin/bash -xe\n",
-
-							"apt-get update -y\n",
-
-							"#Install cfn packages", "\n",
-							"wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.zip", "\n",
-							"unzip aws-cfn-bootstrap-latest.zip", "\n",
-							"cd aws*", "\n",
-							"python setup.py install", "\n",
-
-
-							"cd ..", "\n",
-							"pwd", "\n",
-
-							"#Install Docker and git packages", "\n",
-
-							"apt-get install -y git \n",
-							"apt-get install -y docker.io\n",
-
-							"git clone https://github.com/gaonkarr/VisualSearch_MXNet_CFN.git\n",
-							"cd VisualSearch_MXNet_CFN", "\n",
-
-							"`aws ecr get-login --region ", { "Ref": "AWS::Region" }, "`\n",
-							"docker build -t ", { "Ref": "MyRepository" }, ":latest  . ", "\n",
-							"docker images", "\n",
-							"docker tag ", { "Ref": "MyRepository" }, ":latest ", { "Ref": "AWS::AccountId" }, ".dkr.ecr.", { "Ref": "AWS::Region" }, ".amazonaws.com/", { "Ref": "MyRepository" }, ":latest", "\n",
-							"docker push ", { "Ref": "AWS::AccountId" }, ".dkr.ecr.", { "Ref": "AWS::Region" }, ".amazonaws.com/", { "Ref": "MyRepository" }, ":latest", "\n",
-
-							"# Signal the status from cfn-init\n",
-							"cfn-signal -e $? ",
-							"         --stack ", { "Ref": "AWS::StackName" },
-							"         --resource DeepLearningInstance ",
-							"         --region ", { "Ref": "AWS::Region" }, "\n"
-
-
-						]]
-					}
-				}
+				}]
 			}
 		},
 		"DeepLearningSG": {
@@ -447,6 +393,7 @@
 		"MyRepository": {
 			"Type": "AWS::ECR::Repository",
 			"Properties": {
+				"RepositoryName": "mms-repo",
 				"RepositoryPolicyText": {
 					"Version": "2008-10-17",
 					"Statement": [{
@@ -475,14 +422,6 @@
 		"DeepLearningInstancePublicIP": {
 			"Description": "The IP of the Deep Learning Instance",
 			"Value": { "Fn::GetAtt": ["DeepLearningInstance", "PublicIp"] }
-		},
-		"ServiceName": {
-			"Description": "Name of ECS Service",
-			"Value": { "Ref": "Service" }
-		},
-		"RepositoryURI": {
-			"Description": "The URI to be used in Docker commands",
-			"Value": { "Fn::Join": ["", [{ "Ref": "AWS::AccountId" }, ".dkr.ecr.", { "Ref": "AWS::Region" }, ".amazonaws.com/", { "Ref": "MyRepository" }, ":latest"]] }
 		}
 	}
 }

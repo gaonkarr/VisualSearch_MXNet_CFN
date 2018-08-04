@@ -1,6 +1,6 @@
 [{
     "ParameterKey": "StackName",
-    "ParameterValue": "mystackMMS"
+    "ParameterValue": "myteststackMMS"
   },
   {
     "ParameterKey": "KeyName",
@@ -8,7 +8,7 @@
   },
   {
     "ParameterKey": "ServiceName",
-    "ParameterValue": "mxnet-model-server-fargate-app"
+    "ParameterValue": "mxnet-model-server-fargate-app5"
   },
   {
     "ParameterKey": "ImageUrl",
