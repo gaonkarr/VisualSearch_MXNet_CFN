@@ -40,19 +40,32 @@ aws cloudformation create-stack --stack-name <<Stack2Name>> --template-body file
 
 
 3. Log into the Deep Learning instance using KeyPair provided during CloudFormation stack launch. 
+Following command for MACs. 
+More info AWS Documentation for information on [Configure the Client to Connect to the Jupyter Server](https://docs.aws.amazon.com/dlami/latest/devguide/setup-jupyter-configure-client.html) 
+
+
 ```
 ssh -i ./<<keypair-name>>.pem -L 8888:127.0.0.1:8888 ubuntu@<<InstanceIP>>
 ```
 
-### Follow steps https://github.com/ThomasDelteil/VisualSearch_MXNet for Visual Search with MXNet Gluon and HNSW
+### Visual Search with MXNet Gluon and HNSW
 
 4.  After logging in run following commands :
+Follow steps https://github.com/ThomasDelteil/VisualSearch_MXNet for
 
+```
 git clone https://github.com/ThomasDelteil/VisualSearch_MXNet.git
+```
 
-# [[[[NEED HELP IN THIS SECTION]]]]]  
 
-5.  Once the Jupyter Notebook is started, access it via your local browser using localhost link.
+5.  Once the Jupyter Notebook is started, access it via your local browser using localhost link. The token is displayed in the terminal window where you launched the server. Look for something like:
+```
+Copy/paste this URL into your browser when you connect for the first time, to login with a token: http://localhost:8888/?token=0d3f35c9e404882eaaca6e15efdccbcd9a977fee4a8bc083
+```
+
+Copy the link and use that to access your Jupyter notebook server.
+  
+
 6.  Run the steps in Jupyter Notebook to create models and indexes.
   
 
