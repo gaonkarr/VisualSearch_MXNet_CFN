@@ -1,6 +1,6 @@
 {
 	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "Deploy a service on AWS Fargate, hosted in a private subnet, but accessible via a public load balancer.",
+	"Description": "Deploy a service on AWS Fargate, hosted in a private subnet, but accessible via a public load balancer. This also launches an EC2 instance using Deep Learning Ubuntu AMI",
 	"Parameters": {
 		"StackName": {
 			"Type": "String",

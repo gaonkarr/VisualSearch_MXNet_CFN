@@ -1,6 +1,6 @@
 [{
     "ParameterKey": "StackName",
-    "ParameterValue": "myteststackMMS"
+    "ParameterValue": "mystackMMS"
   },
   {
     "ParameterKey": "KeyName",
