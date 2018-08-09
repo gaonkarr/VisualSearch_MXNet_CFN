@@ -65,7 +65,7 @@ ssh -i ./<<keypair-name>>.pem -L 8888:127.0.0.1:8888 ubuntu@<<InstanceIP>>
 4. After logging in run following command to download the git repo :
  
 ```
-git clone https://github.com/ThomasDelteil/VisualSearch_MXNet.git
+ls
 ```
 
 

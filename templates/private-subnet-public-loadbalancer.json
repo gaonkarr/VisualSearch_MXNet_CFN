@@ -171,10 +171,7 @@
 	},
 	"Mappings": {
 		"DeepLearningAMI": {
-			"us-east-1": { "AMI": "ami-d1c9cdae" },
-			"us-west-2": { "AMI": "ami-18693660" },
-			"eu-west-1": { "AMI": "ami-8a392060" },
-			"us-east-2": { "AMI": "ami-885a60ed" }
+			"us-east-1": { "AMI": "ami-9c9174e" }
 		}
 	},
 	"Resources": {
@@ -366,6 +363,7 @@
 							"pwd", "\n",
 
 							"#Install Docker and git packages", "\n",
+							"delgroup --remove-all-files --remove-home docker", "\n",
 
 							"apt-get install -y git \n",
 							"apt-get install -y docker.io\n",
@@ -383,7 +381,9 @@
 							"cfn-signal -e $? ",
 							"         --stack ", { "Ref": "AWS::StackName" },
 							"         --resource DeepLearningInstance ",
-							"         --region ", { "Ref": "AWS::Region" }, "\n"
+							"         --region ", { "Ref": "AWS::Region" }, "\n",
+
+							"dd if=/dev/xvda of=/dev/null bs=1M status=progress", "\n"
 
 
 						]]
