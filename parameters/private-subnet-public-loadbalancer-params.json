@@ -16,11 +16,11 @@
   },
   {
     "ParameterKey": "WebContainerPort",
-    "ParameterValue": "8080"
+    "ParameterValue": "8000"
   },
   {
     "ParameterKey": "WebHostPort",
-    "ParameterValue": "8080"
+    "ParameterValue": "8000"
   },
   {
     "ParameterKey": "AppContainerPort",

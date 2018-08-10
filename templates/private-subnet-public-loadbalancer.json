@@ -33,12 +33,12 @@
 		},
 		"AppContainerPort": {
 			"Type": "Number",
-			"Default": 4444,
+			"Default": 8080,
 			"Description": "What port number the application inside the App docker container is binding to"
 		},
 		"AppHostPort": {
 			"Type": "Number",
-			"Default": 444,
+			"Default": 8080,
 			"Description": "What port number the application inside the App docker container is binding to"
 		},
 		"WebContainerCpu": {
@@ -260,7 +260,7 @@
 		},
 		"AppService": {
 			"Type": "AWS::ECS::Service",
-			"DependsOn": "LoadBalancerRule",
+			"DependsOn": "AppLoadBalancerRule",
 			"Properties": {
 				"ServiceName": { "Ref": "AppServiceName" },
 				"Cluster": {
@@ -296,7 +296,7 @@
 		},
 		"WebService": {
 			"Type": "AWS::ECS::Service",
-			"DependsOn": "LoadBalancerRule",
+			"DependsOn": "WebLoadBalancerRule",
 			"Properties": {
 				"ServiceName": { "Ref": "WebServiceName" },
 				"Cluster": {
@@ -454,20 +454,25 @@
 							"git clone https://github.com/gaonkarr/VisualSearch_MXNet_CFN.git\n",
 							"cd VisualSearch_MXNet_CFN", "\n",
 
-							"#Get docker login"
+							"#Get docker login", "\n",
 							"`aws ecr get-login --region ", { "Ref": "AWS::Region" }, "`\n",
 
-							"#Build Web Image & push to its repository", "`\n",
-							"cd web", "`\n",
+							"#Build Web Image & push to its repository", "\n",
+							"cd web", "\n",
 							"docker build -t ", { "Ref": "WebRepository" }, ":latest  . ", "\n",
 							"docker images", "\n",
 							"docker tag ", { "Ref": "WebRepository" }, ":latest ", { "Ref": "AWS::AccountId" }, ".dkr.ecr.", { "Ref": "AWS::Region" }, ".amazonaws.com/", { "Ref": "WebRepository" }, ":latest", "\n",
 							"docker push ", { "Ref": "AWS::AccountId" }, ".dkr.ecr.", { "Ref": "AWS::Region" }, ".amazonaws.com/", { "Ref": "WebRepository" }, ":latest", "\n",
 
+							"# Signal the status from cfn-init\n",
+							"cfn-signal -e $? ",
+							"         --stack ", { "Ref": "AWS::StackName" },
+							"         --resource DeepLearningInstance ",
+							"         --region ", { "Ref": "AWS::Region" }, "\n",
 
 
-							"#Build App API Image & push to its repository", "`\n",
-							"cd ../app"
+							"#Build App API Image & push to its repository", "\n",
+							"cd ../app", "\n",
 							"docker build -t ", { "Ref": "AppRepository" }, ":latest  . ", "\n",
 							"docker images", "\n",
 							"docker tag ", { "Ref": "AppRepository" }, ":latest ", { "Ref": "AWS::AccountId" }, ".dkr.ecr.", { "Ref": "AWS::Region" }, ".amazonaws.com/", { "Ref": "AppRepository" }, ":latest", "\n",
@@ -598,13 +603,17 @@
 			"Description": "The IP of the Deep Learning Instance",
 			"Value": { "Fn::GetAtt": ["DeepLearningInstance", "PublicIp"] }
 		},
-		"ServiceName": {
-			"Description": "Name of ECS Service",
-			"Value": { "Ref": "Service" }
+		"WebServiceName": {
+			"Description": "Name of ECS Web Service",
+			"Value": { "Ref": "WebService" }
 		},
-		"RepositoryURI": {
+		"AppServiceName": {
+			"Description": "Name of ECS App Service",
+			"Value": { "Ref": "AppService" }
+		},
+		"AppRepositoryURI": {
 			"Description": "The URI to be used in Docker commands",
-			"Value": { "Fn::Join": ["", [{ "Ref": "AWS::AccountId" }, ".dkr.ecr.", { "Ref": "AWS::Region" }, ".amazonaws.com/", { "Ref": "MyRepository" }, ":latest"]] }
+			"Value": { "Fn::Join": ["", [{ "Ref": "AWS::AccountId" }, ".dkr.ecr.", { "Ref": "AWS::Region" }, ".amazonaws.com/", { "Ref": "AppRepository" }, ":latest"]] }
 		},
 		"ELBurl": {
 			"Description": "The url of the external load balancer",
