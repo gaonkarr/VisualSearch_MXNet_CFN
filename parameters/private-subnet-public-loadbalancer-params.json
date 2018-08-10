@@ -7,27 +7,44 @@
     "ParameterValue": "WebServerKey"
   },
   {
-    "ParameterKey": "ServiceName",
+    "ParameterKey": "WebServiceName",
+    "ParameterValue": "mxnet-model-server-fargate-web"
+  },
+  {
+    "ParameterKey": "AppServiceName",
     "ParameterValue": "mxnet-model-server-fargate-app"
   },
   {
-    "ParameterKey": "ImageUrl",
-    "ParameterValue": "awsdeeplearningteam/mms_cpu"
-  },
-  {
-    "ParameterKey": "ContainerPort",
+    "ParameterKey": "WebContainerPort",
     "ParameterValue": "8080"
   },
   {
-    "ParameterKey": "HostPort",
+    "ParameterKey": "WebHostPort",
     "ParameterValue": "8080"
   },
   {
-    "ParameterKey": "ContainerCpu",
+    "ParameterKey": "AppContainerPort",
+    "ParameterValue": "8080"
+  },
+  {
+    "ParameterKey": "AppHostPort",
+    "ParameterValue": "8080"
+  },
+
+  {
+    "ParameterKey": "WebContainerCpu",
     "ParameterValue": "256"
   },
   {
-    "ParameterKey": "ContainerMemory",
+    "ParameterKey": "WebContainerMemory",
+    "ParameterValue": "512"
+  },
+  {
+    "ParameterKey": "AppContainerCpu",
+    "ParameterValue": "256"
+  },
+  {
+    "ParameterKey": "AppContainerMemory",
     "ParameterValue": "512"
   },
   {
@@ -39,7 +56,7 @@
     "ParameterValue": "1"
   },
   {
-    "ParameterKey": "DesiredCount",
+    "ParameterKey": "AppDesiredCount",
     "ParameterValue": "2"
   },
   {

@@ -62,7 +62,7 @@ ssh -i ./<<keypair-name>>.pem -L 8888:127.0.0.1:8888 ubuntu@<<InstanceIP>>
 
 ### Visual Search with MXNet Gluon and HNSW
 
-4. After logging in run following command to download the git repo :
+4. After logging in run following command to check the downloaded the git repo :
  
 ```
 ls
@@ -88,10 +88,12 @@ Copy the link and use that to access your Jupyter notebook server.
 7. Once the model is created go back to the Deep Learning Instance terminal, run following commands to update the docker image and push it to ECR.
     
 
-   7.1 Get docker login & build the Docker image using Dockerfile provided in "VisualSearch_MXNet/mms" folder.
+   7.1 Get docker login & build the Docker image using Dockerfile provided in "VisualSearch_MXNet/mms" folder. 
+   <repository-name> is in the outputs section of CloudFormation. 
 
 ```
     cd <path/to/project>/VisualSearch_MXNet/mms
+    mxnet-model-export --model-name visualsearch --model-path . --service-file-path service.py 
     `aws ecr get-login --region us-east-1`
     docker build -t <repository-name>:latest .
 ```
