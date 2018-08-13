@@ -20,9 +20,10 @@ The stack then creates a ECS cluster with the task definition.
 
 ### Prerequisites
 
-If you are using CLI to interact with AWS, then ensure CLI is configured. [Default region US-EAST-1, considering availability of used resources]
+1. If you are using CLI to interact with AWS, then ensure CLI is configured. [Default region US-EAST-1, considering availability of used resources]
+Easiest to use the AWS Console.
 
-Ensure that you have a KeyPair available to access the Deep Learning Instance.
+2. Ensure that you have a KeyPair available to access the Deep Learning Instance.
 
 ## Steps to run VisualSearch_MXNet Workshop
 
@@ -35,6 +36,8 @@ To launch using CLI :
 ```
 aws cloudformation create-stack --stack-name <<Stack1Name>> --template-body file:///templates/public-private-vpc.json --capabilities  CAPABILITY_IAM 
 ```
+
+Wait for above stack to reach CREATE_COMPLETE stage. 
 
 In the parameters/private-subnet-public-loadbalancer-params.json. Parameter Key : StackName ; ensure to update the Value provided in <<Stack1Name>>
 
@@ -62,10 +65,11 @@ ssh -i ./<<keypair-name>>.pem -L 8888:127.0.0.1:8888 ubuntu@<<InstanceIP>>
 
 ### Visual Search with MXNet Gluon and HNSW
 
-4. After logging in run following command to check the downloaded the git repo :
+4. After logging in check the repo contents and then start the jupyter notebook :
  
 ```
-ls
+    ls
+    jupyter notebook
 ```
 
 
@@ -87,41 +91,46 @@ Copy the link and use that to access your Jupyter notebook server.
 
 7. Once the model is created go back to the Deep Learning Instance terminal, run following commands to update the docker image and push it to ECR.
     
+   7.1 Configure aws cli to use IAM role and correct region:
+```
+   aws configure
+```
 
-   7.1 Get docker login & build the Docker image using Dockerfile provided in "VisualSearch_MXNet/mms" folder. 
+   7.2 Get docker login & build the Docker image using Dockerfile provided in "VisualSearch_MXNet/mms" folder. 
    <repository-name> is in the outputs section of CloudFormation. 
 
 ```
+    source activate python3
     cd <path/to/project>/VisualSearch_MXNet/mms
-    mxnet-model-export --model-name visualsearch --model-path . --service-file-path service.py 
-    `aws ecr get-login --region us-east-1`
-    docker build -t <repository-name>:latest .
+    mxnet-model-export --model-name visualsearch --model-path . --service-file service.py 
+    sudo `aws ecr get-login --region us-east-1`
+    sudo docker build -t <repository-name>:latest .
 ```
 
 
-  7.2 Check the image using command :
+  7.3 Check the image using command :
 
 ```
-    docker images
-```
-
-
-   7.3 Tag the image with latest tag *[Check out 2nd CloudFormation stack outputs section for repository URI]*
-```
-    docker tag <repository-name>:latest <account-id>.dkr.ecr.<region>.amazonaws.com/<repository-name>:latest
+    sudo docker images
 ```
 
 
-   7.4 Push the docker image to ECR repository
+   7.4 Tag the image with latest tag *[Check out 2nd CloudFormation stack outputs section for "AppRepositoryURI"]*
+```
+    sudo docker tag <repository-name>:latest <account-id>.dkr.ecr.<region>.amazonaws.com/<repository-name>:latest
+```
+
+
+   7.5 Push the docker image to ECR repository
 
 ```
-    docker push <account-id>.dkr.ecr.<region>.amazonaws.com/<repository-name>:latest
+    sudo docker push <account-id>.dkr.ecr.<region>.amazonaws.com/<repository-name>:latest
 ```
 
 
-   7.5 Update the service. Run following on local machine or Deep Learning Instance. *[Service name is in outputs section of 2nd CloudFormation stack.]*
+   7.6 Update the service. Run following on local machine or Deep Learning Instance. *["ClusterName" is in outputs section of 2nd CloudFormation stack.]*
 ```
-    aws ecs update-service --service <ecs-service-name> --force-new-deployment
+    aws ecs update-service --service mxnet-model-server-fargate-app --cluster <cluster-name> --force-new-deployment 
 ```
 
 
