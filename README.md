@@ -87,37 +87,56 @@ Copy the link and use that to access your Jupyter notebook server.
 
 
 
-### Steps to update the docker image and push it to Fargate
+### Steps to update the docker image locally [and push it to Fargate]
 
 7. Once the model is created go back to the Deep Learning Instance terminal, run following commands to update the docker image and push it to ECR.
     
    7.1 Configure aws cli to use IAM role and correct region:
 ```
    aws configure
+   sudo `aws ecr get-login --region us-east-1`
 ```
 
    7.2 Get docker login & build the Docker image using Dockerfile provided in "VisualSearch_MXNet/mms" folder. 
-   <repository-name> is in the outputs section of CloudFormation. 
+   <repository-name> is in the outputs section of CloudFormation. <image-name> can be anything!
 
 ```
     source activate python3
     cd <path/to/project>/VisualSearch_MXNet/mms
     mxnet-model-export --model-name visualsearch --model-path . --service-file service.py 
-    sudo `aws ecr get-login --region us-east-1`
-    sudo docker build -t <image-name> .
+    
 ```
 
 
   7.3 Run the image locally using command :
 
 ```
+    sudo docker build -t <image-name> .
     sudo docker images
     sudo docker run -d -p 8080:8080 <image-name>:latest
     curl 127.0.0.1:8080/api-description
 ```
 
+   7.4 We will follow same process for the web container. Edit the index.html to point to http://<<DeepLearningInstanceIP>>:8080. [Replace https://api.thomasdelteil.com]
 
-   7.4 Tag the image with latest tag of ECR Repository *[Check out 2nd CloudFormation stack outputs section for "AppRepositoryURI"]*
+```
+    cd ~
+    git clone https://github.com/gaonkarr/VisualSearch_MXNet_CFN
+    cd VisualSearch_MXNet_CFN/web/
+    vi index.html
+    
+```
+   
+   7.5  Build web images and run it locally :   
+
+```
+   sudo docker build -t web .
+   sudo docker run -d -p 8000:8000 web:latest
+``` 
+
+   7.6  Goto local browser http://<DeepLearningInstancePublicIP>:8000. This should display the index.html. Upload any image file and it should show the matches.
+
+   7.7 To push the image to ECR, Tag the image with latest tag of ECR Repository *[Check out 2nd CloudFormation stack outputs section for "AppRepositoryURI"]*
 ```
     sudo docker tag <image-name>:latest <account-id>.dkr.ecr.<region>.amazonaws.com/<repository-name>:latest
 ```
