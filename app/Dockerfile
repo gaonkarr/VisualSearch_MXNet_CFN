@@ -8,6 +8,8 @@ RUN git clone https://github.com/nmslib/hnsw \
     && cd python_bindings \
     && python setup.py install
 
+RUN pip uninstall -y mxnet-mkl \
+    && pip install mxnet
 
 
 ENV PATH="/mxnet_model_server:${PATH}" 

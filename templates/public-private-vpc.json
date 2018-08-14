@@ -247,13 +247,13 @@
 				"SourceSecurityGroupId": { "Ref": "PublicLoadBalancerSG" }
 			}
 		},
-		"EcsSecurityGroupIngressFromPrivateALB": {
+		"EcsSecurityGroupIngressFromPublicAppALB": {
 			"Type": "AWS::EC2::SecurityGroupIngress",
 			"Properties": {
-				"Description": "Ingress from the private ALB",
+				"Description": "Ingress from the prublic App ALB",
 				"GroupId": { "Ref": "FargateContainerSecurityGroup" },
 				"IpProtocol": -1,
-				"SourceSecurityGroupId": { "Ref": "PrivateLoadBalancerSG" }
+				"SourceSecurityGroupId": { "Ref": "PublicLoadBalancerAppSG" }
 			}
 		},
 		"EcsSecurityGroupIngressFromSelf": {
@@ -323,40 +323,44 @@
 				"Protocol": "HTTP"
 			}
 		},
-		"PrivateLoadBalancerSG": {
+		"PublicLoadBalancerAppSG": {
 			"Type": "AWS::EC2::SecurityGroup",
 			"Properties": {
-				"GroupDescription": "Access to the internal load balancer",
-				"VpcId": { "Ref": "VPC" }
+				"GroupDescription": "Access to the public facing load balancer",
+				"VpcId": { "Ref": "VPC" },
+				"SecurityGroupIngress": [{
+					"CidrIp": "0.0.0.0/0",
+					"IpProtocol": -1
+				}]
 			}
 		},
-		"PrivateLoadBalancerIngressFromECS": {
+		"PublicLoadBalancerAppIngressFromECS": {
 			"Type": "AWS::EC2::SecurityGroupIngress",
 			"Properties": {
 				"Description": "Only accept traffic from a container in the fargate container security group",
-				"GroupId": { "Ref": "PrivateLoadBalancerSG" },
+				"GroupId": { "Ref": "PublicLoadBalancerAppSG" },
 				"IpProtocol": -1,
 				"SourceSecurityGroupId": { "Ref": "FargateContainerSecurityGroup" }
 			}
 		},
-		"PrivateLoadBalancer": {
+		"PublicLoadBalancerApp": {
 			"Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
 			"Properties": {
-				"Scheme": "internal",
+				"Scheme": "internet-facing",
 				"LoadBalancerAttributes": [{
 					"Key": "idle_timeout.timeout_seconds",
 					"Value": "30"
 				}],
 				"Subnets": [
-					{ "Ref": "PrivateSubnetOne" },
-					{ "Ref": "PrivateSubnetTwo" }
+					{ "Ref": "PublicSubnetOne" },
+					{ "Ref": "PublicSubnetTwo" }
 				],
 				"SecurityGroups": [
-					{ "Ref": "PrivateLoadBalancerSG" }
+					{ "Ref": "PublicLoadBalancerAppSG" }
 				]
 			}
 		},
-		"DummyTargetGroupPrivate": {
+		"DummyTargetGroupPublicApp": {
 			"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
 			"Properties": {
 				"HealthCheckIntervalSeconds": 6,
@@ -371,17 +375,17 @@
 				"VpcId": { "Ref": "VPC" }
 			}
 		},
-		"PrivateLoadBalancerListener": {
+		"PublicLoadBalancerAppListener": {
 			"Type": "AWS::ElasticLoadBalancingV2::Listener",
 			"DependsOn": [
-				"PrivateLoadBalancer"
+				"PublicLoadBalancerApp"
 			],
 			"Properties": {
 				"DefaultActions": [{
-					"TargetGroupArn": { "Ref": "DummyTargetGroupPrivate" },
+					"TargetGroupArn": { "Ref": "DummyTargetGroupPublicApp" },
 					"Type": "forward"
 				}],
-				"LoadBalancerArn": { "Ref": "PrivateLoadBalancer" },
+				"LoadBalancerArn": { "Ref": "PublicLoadBalancerApp" },
 				"Port": 80,
 				"Protocol": "HTTP"
 			}
@@ -475,16 +479,23 @@
 		},
 		"InternalUrl": {
 			"Description": "The url of the internal load balancer",
-			"Value": { "Fn::Join": ["", ["http://", { "Fn::GetAtt": ["PrivateLoadBalancer", "DNSName"] }]] },
+			"Value": { "Fn::Join": ["", ["http://", { "Fn::GetAtt": ["PublicLoadBalancerApp", "DNSName"] }]] },
 			"Export": {
 				"Name": { "Fn::Join": [":", [{ "Ref": "AWS::StackName" }, "InternalUrl"]] }
 			}
 		},
-		"ExternalUrl": {
-			"Description": "The url of the external load balancer",
+		"ExternalWebUrl": {
+			"Description": "The url of the external WEB load balancer",
 			"Value": { "Fn::Join": ["", ["http://", { "Fn::GetAtt": ["PublicLoadBalancer", "DNSName"] }]] },
 			"Export": {
-				"Name": { "Fn::Join": [":", [{ "Ref": "AWS::StackName" }, "ExternalUrl"]] }
+				"Name": { "Fn::Join": [":", [{ "Ref": "AWS::StackName" }, "ExternalWebUrl"]] }
+			}
+		},
+		"ExternalAppUrl": {
+			"Description": "The url of the external APP load balancer",
+			"Value": { "Fn::Join": ["", ["http://", { "Fn::GetAtt": ["PublicLoadBalancerApp", "DNSName"] }]] },
+			"Export": {
+				"Name": { "Fn::Join": [":", [{ "Ref": "AWS::StackName" }, "ExternalAppUrl"]] }
 			}
 		},
 		"ECSRole": {
@@ -509,11 +520,11 @@
 
 			}
 		},
-		"PrivateListener": {
+		"PublicLoadBalancerApp": {
 			"Description": "The ARN of the public load balancer's Listener",
-			"Value": { "Ref": "PrivateLoadBalancerListener" },
+			"Value": { "Ref": "PublicLoadBalancerAppListener" },
 			"Export": {
-				"Name": { "Fn::Join": [":", [{ "Ref": "AWS::StackName" }, "PrivateListener"]] }
+				"Name": { "Fn::Join": [":", [{ "Ref": "AWS::StackName" }, "PublicLoadBalancerAppListener"]] }
 
 			}
 		},

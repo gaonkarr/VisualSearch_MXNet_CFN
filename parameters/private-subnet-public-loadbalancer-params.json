@@ -1,6 +1,6 @@
 [{
     "ParameterKey": "StackName",
-    "ParameterValue": "mmss2"
+    "ParameterValue": "tss1"
   },
   {
     "ParameterKey": "KeyName",
@@ -41,11 +41,11 @@
   },
   {
     "ParameterKey": "AppContainerCpu",
-    "ParameterValue": "256"
+    "ParameterValue": "2048"
   },
   {
     "ParameterKey": "AppContainerMemory",
-    "ParameterValue": "512"
+    "ParameterValue": "4096"
   },
   {
     "ParameterKey": "Path",

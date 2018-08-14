@@ -1,10 +1,10 @@
 {
 	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "Deploy a service on AWS Fargate, hosted in a private subnet, but accessible via a public load balancer. This also launches an EC2 instance using Deep Learning Ubuntu AMI",
+	"Description": "Deploy 2 services - Web & Api on AWS Fargate, hosted in a private subnet, but accessible via a public load balancer. This also launches an EC2 instance using Deep Learning Ubuntu AMI",
 	"Parameters": {
 		"StackName": {
 			"Type": "String",
-			"Default": "production",
+			"Default": "fargateNetworking",
 			"Description": "The name of the parent Fargate networking stack that you created. Necessary\nto locate and reference resources created by that stack."
 		},
 		"KeyName": {
@@ -53,12 +53,12 @@
 		},
 		"AppContainerCpu": {
 			"Type": "Number",
-			"Default": 256,
+			"Default": 2048,
 			"Description": "How much CPU to give the container. 1024 is 1 CPU"
 		},
 		"AppContainerMemory": {
 			"Type": "Number",
-			"Default": 512,
+			"Default": 4096,
 			"Description": "How much memory in megabytes to give the container"
 		},
 		"Path": {
@@ -171,7 +171,11 @@
 	},
 	"Mappings": {
 		"DeepLearningAMI": {
-			"us-east-1": { "AMI": "ami-9c9174e2" }
+			"us-east-1": { "AMI": "ami-099021e563ad6eab5" },
+			"ap-northeast-1": { "AMI": "ami-0b5afaa6a5a611ce0" },
+			"ap-northeast-2": { "AMI": "ami-03ba22912b5e07bf4" },
+			"ap-southeast-1": { "AMI": "ami-03dd181b02b607d7a" },
+			"eu-west-1": { "AMI": "ami-0889b07a985938615" }
 		}
 	},
 	"Resources": {
@@ -211,7 +215,7 @@
 					}],
 					"Essential": true,
 					"EntryPoint": [
-						"python", "start", "-m", "SimpleHTTPServer"
+						"python", "-m", "SimpleHTTPServer"
 					]
 				}]
 			}
@@ -239,6 +243,8 @@
 				},
 				"ContainerDefinitions": [{
 					"Name": { "Ref": "AppServiceName" },
+					"Cpu": { "Ref": "AppContainerCpu" },
+					"Memory": { "Ref": "AppContainerMemory" },
 					"Image": {
 						"Fn::Join": ["", [{ "Ref": "AWS::AccountId" },
 							".dkr.ecr.",
@@ -254,7 +260,71 @@
 					"Essential": true,
 					"EntryPoint": [
 						"mxnet-model-server", "start", "--mms-config", "/mxnet_model_server/mms_app_cpu.conf"
+					],
+					"LogConfiguration": {
+						"LogDriver": "awslogs",
+						"Options": {
+							"awslogs-group": {
+								"Ref": "CloudwatchLogsGroup"
+							},
+							"awslogs-region": {
+								"Ref": "AWS::Region"
+							},
+							"awslogs-stream-prefix": { "Ref": "AppServiceName" }
+						}
+					}
+				}]
+			}
+		},
+		"CloudwatchLogsGroup": {
+			"Type": "AWS::Logs::LogGroup",
+			"Properties": {
+				"LogGroupName": {
+					"Fn::Join": [
+						"-", [
+							"ECSLogGroup",
+							{
+								"Ref": "AWS::StackName"
+							}
+						]
 					]
+				},
+				"RetentionInDays": 14
+			}
+		},
+		"WebService": {
+			"Type": "AWS::ECS::Service",
+			"DependsOn": "WebLoadBalancerRule",
+			"Properties": {
+				"ServiceName": { "Ref": "WebServiceName" },
+				"Cluster": {
+					"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "ClusterName"]] }
+				},
+				"LaunchType": "FARGATE",
+				"DeploymentConfiguration": {
+					"MaximumPercent": 200,
+					"MinimumHealthyPercent": 100
+				},
+				"DesiredCount": 1,
+				"NetworkConfiguration": {
+					"AwsvpcConfiguration": {
+						"SecurityGroups": [{
+							"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "FargateContainerSecurityGroup"]] }
+						}],
+						"Subnets": [{
+								"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "PrivateSubnetOne"]] }
+							},
+							{
+								"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "PrivateSubnetTwo"]] }
+							}
+						]
+					}
+				},
+				"TaskDefinition": { "Ref": "WebTaskDefinition" },
+				"LoadBalancers": [{
+					"ContainerName": { "Ref": "WebServiceName" },
+					"ContainerPort": { "Ref": "WebContainerPort" },
+					"TargetGroupArn": { "Ref": "WebTargetGroup" }
 				}]
 			}
 		},
@@ -294,42 +364,6 @@
 				}]
 			}
 		},
-		"WebService": {
-			"Type": "AWS::ECS::Service",
-			"DependsOn": "WebLoadBalancerRule",
-			"Properties": {
-				"ServiceName": { "Ref": "WebServiceName" },
-				"Cluster": {
-					"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "ClusterName"]] }
-				},
-				"LaunchType": "FARGATE",
-				"DeploymentConfiguration": {
-					"MaximumPercent": 200,
-					"MinimumHealthyPercent": 75
-				},
-				"DesiredCount": 1,
-				"NetworkConfiguration": {
-					"AwsvpcConfiguration": {
-						"SecurityGroups": [{
-							"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "FargateContainerSecurityGroup"]] }
-						}],
-						"Subnets": [{
-								"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "PrivateSubnetOne"]] }
-							},
-							{
-								"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "PrivateSubnetTwo"]] }
-							}
-						]
-					}
-				},
-				"TaskDefinition": { "Ref": "WebTaskDefinition" },
-				"LoadBalancers": [{
-					"ContainerName": { "Ref": "WebServiceName" },
-					"ContainerPort": { "Ref": "WebContainerPort" },
-					"TargetGroupArn": { "Ref": "WebTargetGroup" }
-				}]
-			}
-		},
 		"WebTargetGroup": {
 			"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
 			"Properties": {
@@ -351,10 +385,10 @@
 		"AppTargetGroup": {
 			"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
 			"Properties": {
-				"HealthCheckIntervalSeconds": 6,
+				"HealthCheckIntervalSeconds": 20,
 				"HealthCheckPath": "/",
 				"HealthCheckProtocol": "HTTP",
-				"HealthCheckTimeoutSeconds": 5,
+				"HealthCheckTimeoutSeconds": 15,
 				"HealthyThresholdCount": 2,
 				"TargetType": "ip",
 				"Name": { "Ref": "AppServiceName" },
@@ -399,7 +433,7 @@
 					]
 				}],
 				"ListenerArn": {
-					"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "PrivateListener"]] }
+					"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "PublicLoadBalancerAppListener"]] }
 				},
 				"Priority": { "Ref": "Priority" }
 			}
@@ -459,6 +493,10 @@
 
 							"#Build Web Image & push to its repository", "\n",
 							"cd web", "\n",
+
+							"#Replace the API endpoint to App ELB", "\n",
+							"sed -i 's$https://api.thomasdelteil.com$", { "Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "InternalUrl"]] } }, "$g' index.html",
+							"\n",
 							"docker build -t ", { "Ref": "WebRepository" }, ":latest  . ", "\n",
 							"docker images", "\n",
 							"docker tag ", { "Ref": "WebRepository" }, ":latest ", { "Ref": "AWS::AccountId" }, ".dkr.ecr.", { "Ref": "AWS::Region" }, ".amazonaws.com/", { "Ref": "WebRepository" }, ":latest", "\n",
@@ -478,12 +516,7 @@
 							"docker tag ", { "Ref": "AppRepository" }, ":latest ", { "Ref": "AWS::AccountId" }, ".dkr.ecr.", { "Ref": "AWS::Region" }, ".amazonaws.com/", { "Ref": "AppRepository" }, ":latest", "\n",
 							"docker push ", { "Ref": "AWS::AccountId" }, ".dkr.ecr.", { "Ref": "AWS::Region" }, ".amazonaws.com/", { "Ref": "AppRepository" }, ":latest", "\n",
 
-							"# Signal the status from cfn-init\n",
-							"cfn-signal -e $? ",
-							"         --stack ", { "Ref": "AWS::StackName" },
-							"         --resource DeepLearningInstance ",
-							"         --region ", { "Ref": "AWS::Region" }, "\n",
-
+							"# PRewarm EBS", "\n",
 							"dd if=/dev/xvda of=/dev/null bs=1M status=progress", "\n"
 
 
@@ -527,7 +560,10 @@
 							"Effect": "Allow",
 							"Action": [
 								"ecr:*",
-								"cloudtrail:LookupEvents"
+								"cloudtrail:LookupEvents",
+								"ecs:*",
+								"logs:CreateLogStream",
+								"logs:PutLogEvents"
 							],
 							"Resource": "*"
 						}]
@@ -615,10 +651,22 @@
 			"Description": "The URI to be used in Docker commands",
 			"Value": { "Fn::Join": ["", [{ "Ref": "AWS::AccountId" }, ".dkr.ecr.", { "Ref": "AWS::Region" }, ".amazonaws.com/", { "Ref": "AppRepository" }, ":latest"]] }
 		},
-		"ELBurl": {
-			"Description": "The url of the external load balancer",
+		"WebELBurl": {
+			"Description": "The url of the WEB external load balancer",
 			"Value": {
-				"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "ExternalUrl"]] }
+				"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "ExternalWebUrl"]] }
+			}
+		},
+		"AppELBurl": {
+			"Description": "The url of the App external load balancer",
+			"Value": {
+				"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "ExternalAppUrl"]] }
+			}
+		},
+		"ClusterName": {
+			"Description": "The name of the ECS cluster",
+			"Value": {
+				"Fn::ImportValue": { "Fn::Join": [":", [{ "Ref": "StackName" }, "ClusterName"]] }
 			}
 		}
 	}
