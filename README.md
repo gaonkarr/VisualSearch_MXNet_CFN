@@ -117,7 +117,7 @@ Copy the link and use that to access your Jupyter notebook server.
     curl 127.0.0.1:8080/api-description
 ```
 
-   7.4 We will follow same process for the web container. Edit the index.html to point to http://<<DeepLearningInstanceIP>>:8080. [Replace https://api.thomasdelteil.com]
+   7.4 We will follow same process for the web container. Edit the index.html to point to http://DeepLearningInstanceIP:8080. [Replace https://api.thomasdelteil.com]
 
 ```
     cd ~
