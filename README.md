@@ -104,20 +104,22 @@ Copy the link and use that to access your Jupyter notebook server.
     cd <path/to/project>/VisualSearch_MXNet/mms
     mxnet-model-export --model-name visualsearch --model-path . --service-file service.py 
     sudo `aws ecr get-login --region us-east-1`
-    sudo docker build -t <repository-name>:latest .
+    sudo docker build -t <image-name> .
 ```
 
 
-  7.3 Check the image using command :
+  7.3 Run the image locally using command :
 
 ```
     sudo docker images
+    sudo docker run -d -p 8080:8080 <image-name>:latest
+    curl 127.0.0.1:8080/api-description
 ```
 
 
-   7.4 Tag the image with latest tag *[Check out 2nd CloudFormation stack outputs section for "AppRepositoryURI"]*
+   7.4 Tag the image with latest tag of ECR Repository *[Check out 2nd CloudFormation stack outputs section for "AppRepositoryURI"]*
 ```
-    sudo docker tag <repository-name>:latest <account-id>.dkr.ecr.<region>.amazonaws.com/<repository-name>:latest
+    sudo docker tag <image-name>:latest <account-id>.dkr.ecr.<region>.amazonaws.com/<repository-name>:latest
 ```
 
 
@@ -130,7 +132,7 @@ Copy the link and use that to access your Jupyter notebook server.
 
    7.6 Update the service. Run following on local machine or Deep Learning Instance. *["ClusterName" is in outputs section of 2nd CloudFormation stack.]*
 ```
-    aws ecs update-service --service mxnet-model-server-fargate-app --cluster <cluster-name> --force-new-deployment 
+    aws ecs update-service --service mxnet-model-server-fargate-app  --force-new-deployment --cluster <cluster-name>
 ```
 
 
