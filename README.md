@@ -34,15 +34,15 @@ Easiest to use the AWS Console.
  
 To launch using CLI :  
 ```
-aws cloudformation create-stack --stack-name <<Stack1Name>> --template-body file:///templates/public-private-vpc.json --capabilities  CAPABILITY_IAM 
+aws cloudformation create-stack --stack-name NetworkingStack --template-body file:///templates/public-private-vpc.json --capabilities  CAPABILITY_IAM 
 ```
 
 Wait for above stack to reach CREATE_COMPLETE stage. 
 
-In the parameters/private-subnet-public-loadbalancer-params.json. Parameter Key : StackName ; ensure to update the Value provided in <<Stack1Name>>
+In the parameters/private-subnet-public-loadbalancer-params.json. Parameter Key : StackName ; ensure to update the Value provided in NetworkingStack
 
 ```
-aws cloudformation create-stack --stack-name <<Stack2Name>> --template-body file:///templates/private-subnet-public-loadbalancer.json --capabilities  CAPABILITY_IAM --parameters file:///parameters/private-subnet-public-loadbalancer-params.json 
+aws cloudformation create-stack --stack-name ServicesStack --template-body file:///templates/private-subnet-public-loadbalancer.json --capabilities  CAPABILITY_IAM --parameters file:///parameters/private-subnet-public-loadbalancer-params.json 
 ```
 
 
@@ -150,6 +150,7 @@ Copy the link and use that to access your Jupyter notebook server.
     sudo docker push <account-id>.dkr.ecr.<region>.amazonaws.com/<repository-name>:latest
 ```
 
+// There has been issue with docker image failing on fargate, yet to be fixed.
 
    7.6 Update the service. Run following on local machine or Deep Learning Instance. *["ClusterName" is in outputs section of 2nd CloudFormation stack.]*
 ```
