@@ -20,10 +20,11 @@ The stack then creates a ECS cluster with the task definition.
 
 ### Prerequisites
 
-1. If you are using CLI to interact with AWS, then ensure CLI is configured. [Default region US-EAST-1, considering availability of used resources]
-Easiest to use the AWS Console.
+1. If you are using CLI to interact with AWS, then ensure CLI is configured. [Default region US-EAST-1, considering availability of used resources] .  Easiest to use the AWS Console.
 
 2. Ensure that you have a KeyPair available to access the Deep Learning Instance.
+
+3. By default, template launches p3.2xlarge Deep Learning Instances. Check your EC2 Limits. Also update the AZs if you get Insufficient Capacity Errors.
 
 ## Steps to run VisualSearch_MXNet Workshop
 
